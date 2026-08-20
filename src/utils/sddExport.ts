@@ -2,6 +2,43 @@ import { Workflow } from '../types/workflow';
 import jsPDF from 'jspdf';
 
 /**
+ * Sanitizes any string for jsPDF by converting Unicode symbols into clean standard ASCII.
+ * Eliminates garbage byte artifacts like Ø<ßë, Ø=Þáþ, and !'.
+ */
+function cleanForPdf(text: string | undefined | null): string {
+  if (!text) return '';
+  return String(text)
+    // Replace arrow symbols
+    .replace(/[→➔➜►▶]/g, '->')
+    .replace(/[←◄◀]/g, '<-')
+    // Replace bullet points
+    .replace(/[•●▪■]/g, '-')
+    // Replace checkmarks and crosses
+    .replace(/[✓✔]/g, '[OK]')
+    .replace(/[✗✘❌]/g, '[X]')
+    // Replace icons / emojis with clean text tags
+    .replace(/[🛡🔒]/g, '[Resilience]')
+    .replace(/[🎯]/g, '[Goal]')
+    .replace(/[📥]/g, '[In]')
+    .replace(/[📤]/g, '[Out]')
+    .replace(/[⚙️⚙]/g, '[Logic]')
+    .replace(/[🔀]/g, '[Branch]')
+    .replace(/[⏳⏰⏱️]/g, '[SLA]')
+    .replace(/[⚡✨]/g, '')
+    .replace(/[🏫🎓🌐🚌📝📑📄💡🔍📋🎭🛠️]/g, '')
+    // Replace fancy quotes and dashes
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, '-')
+    // Replace non-breaking spaces or weird unicode spaces
+    .replace(/[\u00A0\u2000-\u200B\u202F\u205F\u3000]/g, ' ')
+    // Strip any remaining non-printable or multi-byte characters outside ASCII 32-126
+    .replace(/[^\x20-\x7E\n\r\t]/g, '')
+    .replace(/ +/g, ' ')
+    .trim();
+}
+
+/**
  * Helper to generate descriptive business rationale and execution logic for any node.
  */
 function getNodeExplanatoryDetails(node: any, index: number) {
@@ -139,14 +176,14 @@ function getNodeExplanatoryDetails(node: any, index: number) {
 
   return {
     stepNumber: index + 1,
-    label: data.label || `Step ${index + 1}`,
-    type: (type || 'action').toUpperCase(),
-    phase: data.phase || 'General Phase',
-    rationale,
-    parameters,
-    bullets,
-    resilience,
-    branching
+    label: cleanForPdf(data.label || `Step ${index + 1}`),
+    type: cleanForPdf((type || 'action').toUpperCase()),
+    phase: cleanForPdf(data.phase || 'General Phase'),
+    rationale: cleanForPdf(rationale),
+    parameters: parameters.map(cleanForPdf),
+    bullets: bullets.map(cleanForPdf),
+    resilience: resilience.map(cleanForPdf),
+    branching: branching.map(cleanForPdf)
   };
 }
 
@@ -160,8 +197,10 @@ export function generateWorkflowSddMarkdown(workflow: Workflow): string {
     day: 'numeric'
   });
 
+  const cleanName = cleanForPdf(workflow.name);
+
   let md = `# SOFTWARE DESIGN DOCUMENT (SDD)
-## ${workflow.name}
+## ${cleanName}
 
 **Document Version:** 2.0.0 (Comprehensive Technical & Operational Specification)  
 **Publication Date:** ${timestamp}  
@@ -172,16 +211,16 @@ export function generateWorkflowSddMarkdown(workflow: Workflow): string {
 
 ### 1. Executive Summary & Business Objective
 
-This Software Design Document formalizes the functional architecture, operational data contracts, state transition logic, and failure resilience policies for **${workflow.name}** within the Toddle Visual Admission Engine.
+This Software Design Document formalizes the functional architecture, operational data contracts, state transition logic, and failure resilience policies for **${cleanName}** within the Toddle Visual Admission Engine.
 
 ${workflow.description || 'Modular automated admission flow designed for high-reliability institutional execution.'}
 
-#### 📊 Key Workflow Metrics & Classification:
+#### Key Workflow Metrics & Classification:
 * **Total Configured Process Steps:** \`${workflow.nodes.length} Nodes\`
 * **Direct Transitions & Handlers:** \`${workflow.edges.length} Edges\`
 * **Architectural Modularity:** Decoupled Event-Driven Micro-Workflow
 * **Target Audience / Stakeholders:** Admissions Directors, Academic Registrars, Department Heads, IT Systems Administrators
-* **Associated Tags:** ${workflow.tags?.map((t: string) => `\`${t}\``).join(', ') || '`Admission`, `Core`'}
+* **Associated Tags:** ${workflow.tags?.map((t: string) => `\`${cleanForPdf(t)}\``).join(', ') || '`Admission`, `Core`'}
 
 ---
 
@@ -194,15 +233,15 @@ flowchart TD
 `;
 
   workflow.nodes.forEach((node) => {
-    const cleanLabel = (node.data.label || node.id).replace(/["()]/g, '');
-    const nodeType = (node.type || 'action').toUpperCase();
+    const cleanLabel = cleanForPdf(node.data.label || node.id).replace(/["()]/g, '');
+    const nodeType = cleanForPdf((node.type || 'action').toUpperCase());
     md += `    ${node.id}["[${nodeType}] ${cleanLabel}"]\n`;
   });
 
   if (workflow.edges.length > 0) {
     workflow.edges.forEach((edge) => {
-      const label = edge.label ? `|"${edge.label.replace(/"/g, '')}"|` : '';
-      md += `    ${edge.source} -->${label} ${edge.target}\n`;
+      const label = edge.label ? `|"${cleanForPdf(edge.label)}"` : '';
+      md += `    ${edge.source} -->${label}| ${edge.target}\n`;
     });
   }
 
@@ -224,26 +263,26 @@ Below is the detailed functional breakdown for each node in this workflow phase:
 * **Node Category / Type:** \`${details.type}\`
 * **Phase Tag:** \`${details.phase}\`
 
-#### 🎯 Business Purpose & Rationale
+#### Business Purpose & Rationale
 ${details.rationale}
 
-#### 📥 Configuration Parameters & Data Contracts
+#### Configuration Parameters & Data Contracts
 ${details.parameters.map((p) => `* **${p.split(':')[0]}:** ${p.split(':').slice(1).join(':')}`).join('\n')}
 
-#### ⚙️ Step-by-Step Functional Execution Rules
+#### Step-by-Step Functional Execution Rules
 ${details.bullets.map((b) => `* ${b}`).join('\n')}
 `;
 
     if (details.branching.length > 0) {
       md += `
-#### 🔀 Branching & State Decision Routing
+#### Decision Branching & Routing
 ${details.branching.map((br) => `* ${br}`).join('\n')}
 `;
     }
 
     if (details.resilience.length > 0) {
       md += `
-#### 🛡️ Failure Recovery & SLA Policy
+#### Failure Recovery & SLA Policy
 ${details.resilience.map((r) => `* ${r}`).join('\n')}
 `;
     }
@@ -281,7 +320,7 @@ export function downloadWorkflowSddMarkdown(workflow: Workflow) {
   const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  const filename = `${workflow.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_SDD.md`;
+  const filename = `${cleanForPdf(workflow.name).replace(/[^a-zA-Z0-9_-]/g, '_')}_SDD.md`;
   link.setAttribute('href', url);
   link.setAttribute('download', filename);
   document.body.appendChild(link);
@@ -292,8 +331,8 @@ export function downloadWorkflowSddMarkdown(workflow: Workflow) {
 
 /**
  * Ultra-fast, highly descriptive, zero-lag pure vector PDF generator.
- * Produces an explanatory Software Design Document formatted with clear bullet points,
- * business rationales, data parameters, and resilience matrices.
+ * Produces an explanatory Software Design Document formatted with 100% clean ASCII characters,
+ * eliminating all unicode corruption symbols.
  */
 export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> {
   await new Promise<void>((resolve) => {
@@ -310,6 +349,8 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
       const contentWidth = pageWidth - margin * 2;
       let y = margin;
 
+      const cleanWorkflowName = cleanForPdf(workflow.name);
+
       const checkPageBreak = (neededHeight: number) => {
         if (y + neededHeight > pageHeight - margin - 12) {
           doc.addPage();
@@ -318,7 +359,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(7.5);
           doc.setTextColor(148, 163, 184); // slate-400
-          doc.text(`TODDLE ADMISSION ENGINE — SOFTWARE DESIGN DOCUMENT (SDD): ${workflow.name.substring(0, 50)}`, margin, margin);
+          doc.text(`TODDLE ADMISSION ENGINE - SOFTWARE DESIGN DOCUMENT: ${cleanWorkflowName.substring(0, 48)}`, margin, margin);
           doc.setDrawColor(226, 232, 240);
           doc.setLineWidth(0.3);
           doc.line(margin, margin + 2, pageWidth - margin, margin + 2);
@@ -344,12 +385,12 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
 
       doc.setFontSize(10);
       doc.setTextColor(96, 165, 250); // blue-400
-      doc.text(workflow.name.substring(0, 65), margin + 6, y + 16);
+      doc.text(cleanWorkflowName.substring(0, 65), margin + 6, y + 16);
 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       doc.setTextColor(203, 213, 225);
-      doc.text(`Status: ${workflow.status.toUpperCase()}  |  Category: ${workflow.category.toUpperCase()}  |  Generated: ${timestamp}  |  Total Steps: ${workflow.nodes.length}`, margin + 6, y + 24);
+      doc.text(`Status: ${cleanForPdf(workflow.status).toUpperCase()}  |  Category: ${cleanForPdf(workflow.category).toUpperCase()}  |  Generated: ${timestamp}  |  Total Steps: ${workflow.nodes.length}`, margin + 6, y + 24);
 
       y += 36;
 
@@ -369,7 +410,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
       doc.setTextColor(51, 65, 85); // slate-700
-      const summaryText = workflow.description || 'This Software Design Document formalizes the functional architecture, operational data contracts, and execution rules for this admission workflow phase.';
+      const summaryText = cleanForPdf(workflow.description) || 'This Software Design Document formalizes the functional architecture, operational data contracts, and execution rules for this admission workflow phase.';
       const descLines = doc.splitTextToSize(summaryText, contentWidth);
       doc.text(descLines, margin, y);
       y += descLines.length * 4.2 + 3;
@@ -381,7 +422,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(8);
       doc.setTextColor(30, 41, 59);
-      doc.text(`• Total Process Steps: ${workflow.nodes.length}    • Transitions: ${workflow.edges.length}    • Architecture: Decoupled Event-Driven Micro-Workflow`, margin + 4, y + 7);
+      doc.text(`- Total Process Steps: ${workflow.nodes.length}    - Transitions: ${workflow.edges.length}    - Architecture: Decoupled Event-Driven Micro-Workflow`, margin + 4, y + 7);
       y += 16;
 
       // ==========================================
@@ -446,7 +487,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
         doc.setFont('courier', 'normal');
         doc.setFontSize(7);
         doc.setTextColor(100, 116, 139);
-        doc.text(node.id, pageWidth - margin - 22, y + 4.9);
+        doc.text(cleanForPdf(node.id), pageWidth - margin - 22, y + 4.9);
 
         y += 11;
 
@@ -476,7 +517,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
           doc.setFontSize(7.2);
           doc.setTextColor(51, 65, 85);
           details.parameters.forEach((param) => {
-            const pLines = doc.splitTextToSize(`• ${param}`, contentWidth - 8);
+            const pLines = doc.splitTextToSize(`- ${param}`, contentWidth - 8);
             doc.text(pLines, margin + 5, y);
             y += pLines.length * 3.6;
           });
@@ -494,7 +535,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
         doc.setFontSize(7.2);
         doc.setTextColor(51, 65, 85);
         details.bullets.forEach((bullet) => {
-          const bLines = doc.splitTextToSize(`• ${bullet}`, contentWidth - 8);
+          const bLines = doc.splitTextToSize(`- ${bullet}`, contentWidth - 8);
           doc.text(bLines, margin + 5, y);
           y += bLines.length * 3.6;
         });
@@ -512,7 +553,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
           doc.setFontSize(7.2);
           doc.setTextColor(71, 85, 105);
           details.branching.forEach((br) => {
-            const brLines = doc.splitTextToSize(`→ ${br}`, contentWidth - 8);
+            const brLines = doc.splitTextToSize(`-> ${br}`, contentWidth - 8);
             doc.text(brLines, margin + 5, y);
             y += brLines.length * 3.6;
           });
@@ -531,7 +572,7 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
           doc.setFontSize(7.2);
           doc.setTextColor(51, 65, 85);
           details.resilience.forEach((res) => {
-            const resLines = doc.splitTextToSize(`🛡️ ${res}`, contentWidth - 8);
+            const resLines = doc.splitTextToSize(`[Policy] ${res}`, contentWidth - 8);
             doc.text(resLines, margin + 5, y);
             y += resLines.length * 3.6;
           });
@@ -587,13 +628,13 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(6.8);
         doc.setTextColor(30, 41, 59);
-        doc.text(row[0], margin + 3, y + 4.5);
+        doc.text(cleanForPdf(row[0]), margin + 3, y + 4.5);
 
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(71, 85, 105);
-        doc.text(row[1], margin + 50, y + 4.5);
+        doc.text(cleanForPdf(row[1]), margin + 50, y + 4.5);
 
-        const solLines = doc.splitTextToSize(row[2], 78);
+        const solLines = doc.splitTextToSize(cleanForPdf(row[2]), 78);
         doc.text(solLines[0] || '', margin + 100, y + 4.5);
         y += 7;
       });
@@ -609,11 +650,11 @@ export async function downloadWorkflowSddPdf(workflow: Workflow): Promise<void> 
         doc.setTextColor(148, 163, 184);
         doc.setDrawColor(226, 232, 240);
         doc.line(margin, pageHeight - margin - 2, pageWidth - margin, pageHeight - margin - 2);
-        doc.text(`Toddle Visual Admission Engine • Software Design Document (SDD)`, margin, pageHeight - margin + 2);
+        doc.text(`Toddle Visual Admission Engine - Software Design Document (SDD)`, margin, pageHeight - margin + 2);
         doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin - 15, pageHeight - margin + 2);
       }
 
-      const filename = `${workflow.name.replace(/[^a-zA-Z0-9_-]/g, '_')}_SDD.pdf`;
+      const filename = `${cleanWorkflowName.replace(/[^a-zA-Z0-9_-]/g, '_')}_SDD.pdf`;
       doc.save(filename);
       resolve();
     }, 10);
