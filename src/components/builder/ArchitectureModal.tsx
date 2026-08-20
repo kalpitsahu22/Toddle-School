@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useWorkflowStore } from '../../store/workflowStore';
 import {
+  downloadWorkflowSddPdf,
   printWorkflowSddPdf,
   downloadWorkflowSddMarkdown,
   generateWorkflowSddMarkdown
@@ -66,11 +67,11 @@ export const ArchitectureModal: React.FC = () => {
           {/* Header Action Buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => printWorkflowSddPdf(activeWorkflow)}
+              onClick={() => downloadWorkflowSddPdf(activeWorkflow)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all"
-              title="Print or Save active workflow SDD as PDF"
+              title="Download active workflow SDD directly as PDF"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5" />
               <span>Download PDF</span>
             </button>
 
@@ -79,7 +80,7 @@ export const ArchitectureModal: React.FC = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition-all"
               title="Download active workflow SDD as Markdown"
             >
-              <Download className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Markdown (.md)</span>
             </button>
 
@@ -154,10 +155,10 @@ export const ArchitectureModal: React.FC = () => {
                     <span>{copied ? 'Copied MD!' : 'Copy Markdown'}</span>
                   </button>
                   <button
-                    onClick={() => printWorkflowSddPdf(activeWorkflow)}
+                    onClick={() => downloadWorkflowSddPdf(activeWorkflow)}
                     className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all"
                   >
-                    <Printer className="w-3.5 h-3.5" />
+                    <Download className="w-3.5 h-3.5" />
                     <span>Download PDF Document</span>
                   </button>
                 </div>
