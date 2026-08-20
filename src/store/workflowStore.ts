@@ -26,8 +26,8 @@ import {
 } from '../engine/workflowExecutor';
 import { executeNode } from '../engine/nodeExecutor';
 
-const STORAGE_KEY = 'toddle_workflow_builder_v4';
-const CUSTOM_NODES_STORAGE_KEY = 'toddle_custom_nodes_v4';
+const STORAGE_KEY = 'toddle_workflow_builder_v5';
+const CUSTOM_NODES_STORAGE_KEY = 'toddle_custom_nodes_v5';
 
 function loadCustomNodesFromStorage(): NodeDefinition[] {
   try {

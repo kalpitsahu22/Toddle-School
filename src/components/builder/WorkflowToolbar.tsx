@@ -89,11 +89,12 @@ export const WorkflowToolbar: React.FC = () => {
                 <span className="font-mono text-slate-500">{workflows.length} total</span>
               </div>
 
-              <div className="max-h-72 overflow-y-auto space-y-2 my-1.5 pr-1">
-                {/* Group 1: Modular Decoupled Flows */}
+              <div className="max-h-80 overflow-y-auto space-y-2.5 my-1.5 pr-1 scrollbar-thin">
+                {/* Group 1: 9 Core Modular Flows */}
                 <div>
-                  <div className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-blue-400 bg-blue-950/40 rounded border border-blue-500/20 mb-1">
-                    ⚡ Modular Decoupled Flows (7 Phases)
+                  <div className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-blue-400 bg-blue-950/50 rounded border border-blue-500/20 mb-1 flex items-center justify-between">
+                    <span>⚡ 9 Core Admission Phases</span>
+                    <span className="font-mono text-[9px] text-blue-300">9 Flows</span>
                   </div>
                   <div className="space-y-0.5">
                     {workflows
@@ -120,14 +121,15 @@ export const WorkflowToolbar: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Group 2: Complete Blueprints & Scenarios */}
+                {/* Group 2: Edge Cases & Customizable Sub-Flowcharts */}
                 <div>
-                  <div className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-indigo-400 bg-indigo-950/40 rounded border border-indigo-500/20 mb-1">
-                    🏫 Composed School Blueprints
+                  <div className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-amber-400 bg-amber-950/40 rounded border border-amber-500/20 mb-1 flex items-center justify-between">
+                    <span>🎯 Edge Cases & Sub-Flowcharts</span>
+                    <span className="font-mono text-[9px] text-amber-300">6 Scenarios</span>
                   </div>
                   <div className="space-y-0.5">
                     {workflows
-                      .filter((w) => w.workflowType !== 'modular_phase' && !w.name.match(/^\d\./))
+                      .filter((w) => w.workflowType === 'sub_scenario' || (w.tags && w.tags.includes('Edge Case')))
                       .map((wf) => (
                         <button
                           key={wf.id}
@@ -137,13 +139,50 @@ export const WorkflowToolbar: React.FC = () => {
                           }}
                           className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
                             wf.id === activeWorkflowId
-                              ? 'bg-blue-600/25 text-blue-200 border border-blue-500/40 font-semibold'
+                              ? 'bg-amber-600/25 text-amber-200 border border-amber-500/40 font-semibold'
                               : 'text-slate-300 hover:bg-slate-800'
                           }`}
                         >
                           <span className="truncate pr-2">{wf.name}</span>
                           <span className="text-[10px] font-mono text-slate-500 shrink-0">
-                            v{wf.version} · {wf.nodes.length} nodes
+                            {wf.nodes.length} nodes
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Group 3: Composed Flagship Master Blueprint */}
+                <div>
+                  <div className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-indigo-400 bg-indigo-950/40 rounded border border-indigo-500/20 mb-1 flex items-center justify-between">
+                    <span>🏫 Master Composed Blueprint</span>
+                    <span className="font-mono text-[9px] text-indigo-300">9 Phases End-to-End</span>
+                  </div>
+                  <div className="space-y-0.5">
+                    {workflows
+                      .filter(
+                        (w) =>
+                          w.workflowType !== 'modular_phase' &&
+                          w.workflowType !== 'sub_scenario' &&
+                          !w.name.match(/^\d\./) &&
+                          (!w.tags || !w.tags.includes('Edge Case'))
+                      )
+                      .map((wf) => (
+                        <button
+                          key={wf.id}
+                          onClick={() => {
+                            setActiveWorkflow(wf.id);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
+                            wf.id === activeWorkflowId
+                              ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 font-semibold'
+                              : 'text-slate-300 hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="truncate pr-2">{wf.name}</span>
+                          <span className="text-[10px] font-mono text-slate-500 shrink-0">
+                            {wf.nodes.length} nodes
                           </span>
                         </button>
                       ))}
