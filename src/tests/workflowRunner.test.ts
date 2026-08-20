@@ -1,14 +1,14 @@
 import {
   TODDLE_STANDARD_ADMISSION_WORKFLOW,
-  SIMPLIFIED_ADMISSION_WORKFLOW,
-  INTERNATIONAL_ADMISSION_WORKFLOW,
+  NO_INTERVIEW_FAST_TRACK_WORKFLOW as SIMPLIFIED_ADMISSION_WORKFLOW,
+  INTERNATIONAL_BOARDING_VISA_WORKFLOW as INTERNATIONAL_ADMISSION_WORKFLOW,
   MODULAR_FLOW_1_LEAD_CAPTURE,
   MODULAR_FLOW_2_APP_SUBMISSION,
   MODULAR_FLOW_3_DOC_VERIFICATION,
   MODULAR_FLOW_4_INTERVIEW,
   MODULAR_FLOW_5_COMMITTEE,
-  MODULAR_FLOW_6_FEE_COLLECTION,
-  MODULAR_FLOW_7_ONBOARDING
+  MODULAR_FLOW_7_OFFER_FEE_GOAL as MODULAR_FLOW_6_FEE_COLLECTION,
+  MODULAR_FLOW_8_POST_OFFER_ONBOARDING as MODULAR_FLOW_7_ONBOARDING
 } from '../data/exampleWorkflows';
 import { DEFAULT_MOCK_APPLICANTS, findNextNodes, createInitialExecutionContext } from '../engine/workflowExecutor';
 import { executeNode } from '../engine/nodeExecutor';
@@ -113,10 +113,10 @@ async function testSchoolBFastTrack() {
   console.log('--- TEST 4: SCHOOL B SIMPLIFIED FAST-TRACK FLOW ---');
   const wf = SIMPLIFIED_ADMISSION_WORKFLOW;
   let ctx = createInitialExecutionContext(wf.id, 'primary_applicant');
-  let currentNodeId: string | null = 'simp-node-1';
+  let currentNodeId: string | null = 'ni-node-1';
 
   while (currentNodeId) {
-    const node = wf.nodes.find((n) => n.id === currentNodeId)!;
+    const node = wf.nodes.find((n: { id: string }) => n.id === currentNodeId)!;
     const res = await executeNode(node, ctx.applicant, ctx.variables, {
       forceGoalSatisfied: true
     });

@@ -79,20 +79,6 @@ export const ArchitectureModal: React.FC = () => {
           {/* Header Action Buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={handleDownloadPdf}
-              disabled={isGeneratingPdf}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all disabled:opacity-75"
-              title="Download active workflow SDD directly as PDF"
-            >
-              {isGeneratingPdf ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Download className="w-3.5 h-3.5" />
-              )}
-              <span>{isGeneratingPdf ? 'Generating...' : 'Download PDF'}</span>
-            </button>
-
-            <button
               onClick={() => downloadWorkflowSddMarkdown(activeWorkflow)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold transition-all"
               title="Download active workflow SDD as Markdown"
@@ -158,9 +144,6 @@ export const ArchitectureModal: React.FC = () => {
                   <h3 className="text-base font-extrabold text-white mt-1">
                     {activeWorkflow.name}
                   </h3>
-                  <p className="text-xs text-slate-300 mt-0.5">
-                    {activeWorkflow.description || 'Modular automated admission flow specification.'}
-                  </p>
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">

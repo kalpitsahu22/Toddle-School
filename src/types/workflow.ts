@@ -18,7 +18,25 @@ export type NodeCategory =
 
 export type WorkflowStatus = 'draft' | 'published' | 'archived';
 
-export type WorkflowType = 'modular_phase' | 'full_blueprint' | 'custom';
+export type WorkflowType =
+  | 'modular_phase'
+  | 'full_blueprint'
+  | 'sub_scenario'
+  | 'standard'
+  | 'custom';
+
+export type WorkflowCategory =
+  | 'admission'
+  | 'enquiry'
+  | 'application'
+  | 'verification'
+  | 'interview'
+  | 'committee'
+  | 'waitlist'
+  | 'fee_collection'
+  | 'onboarding'
+  | 'sis_integration'
+  | 'custom';
 
 export type ExecutionNodeStatus =
   | 'idle'
@@ -181,8 +199,8 @@ export interface Workflow {
   id: string;
   name: string;
   description: string;
-  category: 'admission' | 'enquiry' | 'onboarding' | 'custom';
-  workflowType?: WorkflowType; // 'modular_phase' | 'full_blueprint' | 'custom'
+  category: WorkflowCategory;
+  workflowType?: WorkflowType;
   emittedEventOnComplete?: string; // Event emitted when this modular flow finishes (e.g. 'lead.qualified', 'docs.verified')
   version: number;
   status: WorkflowStatus;

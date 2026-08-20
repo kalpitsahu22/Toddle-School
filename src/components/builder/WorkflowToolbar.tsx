@@ -126,11 +126,10 @@ export const WorkflowToolbar: React.FC = () => {
                             setActiveWorkflow(wf.id);
                             setIsDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                            wf.id === activeWorkflowId
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${wf.id === activeWorkflowId
                               ? 'bg-blue-600/25 text-blue-200 border border-blue-500/40 font-semibold'
                               : 'text-slate-300 hover:bg-slate-800'
-                          }`}
+                            }`}
                         >
                           <span className="truncate pr-2">{wf.name}</span>
                           <span className="text-[10px] font-mono text-slate-500 shrink-0">
@@ -157,11 +156,10 @@ export const WorkflowToolbar: React.FC = () => {
                             setActiveWorkflow(wf.id);
                             setIsDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                            wf.id === activeWorkflowId
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${wf.id === activeWorkflowId
                               ? 'bg-amber-600/25 text-amber-200 border border-amber-500/40 font-semibold'
                               : 'text-slate-300 hover:bg-slate-800'
-                          }`}
+                            }`}
                         >
                           <span className="truncate pr-2">{wf.name}</span>
                           <span className="text-[10px] font-mono text-slate-500 shrink-0">
@@ -194,11 +192,10 @@ export const WorkflowToolbar: React.FC = () => {
                             setActiveWorkflow(wf.id);
                             setIsDropdownOpen(false);
                           }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${
-                            wf.id === activeWorkflowId
+                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition-colors ${wf.id === activeWorkflowId
                               ? 'bg-indigo-600/25 text-indigo-200 border border-indigo-500/40 font-semibold'
                               : 'text-slate-300 hover:bg-slate-800'
-                          }`}
+                            }`}
                         >
                           <span className="truncate pr-2">{wf.name}</span>
                           <span className="text-[10px] font-mono text-slate-500 shrink-0">
@@ -237,11 +234,10 @@ export const WorkflowToolbar: React.FC = () => {
         {/* Status Pill */}
         <div className="hidden lg:flex items-center gap-2">
           <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
-              activeWorkflow.status === 'published'
+            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${activeWorkflow.status === 'published'
                 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                 : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
-            }`}
+              }`}
           >
             {activeWorkflow.status}
           </span>
@@ -268,11 +264,10 @@ export const WorkflowToolbar: React.FC = () => {
         <button
           onClick={() => setShowCodeSnippets(!showCodeSnippets)}
           title="Toggle technical logic code snippets on canvas nodes"
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
-            showCodeSnippets
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${showCodeSnippets
               ? 'bg-blue-600/25 border-blue-500/60 text-blue-300 shadow-sm'
               : 'bg-slate-800/80 border-slate-700 hover:border-slate-600 text-slate-400'
-          }`}
+            }`}
         >
           <Code2 className="w-3.5 h-3.5 text-blue-400" />
           <span className="hidden sm:inline">Logic Snippets: {showCodeSnippets ? 'ON' : 'OFF'}</span>
@@ -280,11 +275,10 @@ export const WorkflowToolbar: React.FC = () => {
 
         <button
           onClick={() => setIsValidationModalOpen(true)}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-            validationResult.isValid
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs font-medium transition-all ${validationResult.isValid
               ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300 hover:bg-emerald-950/50'
               : 'bg-amber-950/40 border-amber-500/50 text-amber-300 hover:bg-amber-950/60 animate-pulse'
-          }`}
+            }`}
         >
           {validationResult.isValid ? (
             <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
