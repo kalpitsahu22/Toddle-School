@@ -18,7 +18,8 @@ import {
   Code2,
   Printer,
   FileText,
-  Download
+  Download,
+  Loader2
 } from 'lucide-react';
 import { useWorkflowStore } from '../../store/workflowStore';
 import {
@@ -55,7 +56,18 @@ export const WorkflowToolbar: React.FC = () => {
   } = useWorkflowStore();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const activeWorkflow = workflows.find((w) => w.id === activeWorkflowId) || workflows[0];
+
+  const handleDownloadPdf = async () => {
+    if (isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+    try {
+      await downloadWorkflowSddPdf(activeWorkflow);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   return (
     <header className="h-16 px-4 bg-slate-900/90 border-b border-slate-800 backdrop-blur-md flex items-center justify-between z-30 shrink-0 select-none">
@@ -292,12 +304,17 @@ export const WorkflowToolbar: React.FC = () => {
         {/* SDD Download Button Dropdown */}
         <div className="relative group">
           <button
-            onClick={() => downloadWorkflowSddPdf(activeWorkflow)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600/90 to-indigo-600/90 hover:from-blue-600 hover:to-indigo-600 border border-blue-400/40 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-95"
+            onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600/90 to-indigo-600/90 hover:from-blue-600 hover:to-indigo-600 border border-blue-400/40 text-white text-xs font-bold transition-all shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-75"
             title="Directly download full Software Design Document (PDF) for current active flow"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Download SDD (PDF)</span>
+            {isGeneratingPdf ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Download className="w-3.5 h-3.5" />
+            )}
+            <span>{isGeneratingPdf ? 'Generating...' : 'Download SDD (PDF)'}</span>
             <ChevronDown className="w-3 h-3 opacity-70" />
           </button>
 
@@ -307,10 +324,15 @@ export const WorkflowToolbar: React.FC = () => {
               Export SDD Document
             </div>
             <button
-              onClick={() => downloadWorkflowSddPdf(activeWorkflow)}
+              onClick={handleDownloadPdf}
+              disabled={isGeneratingPdf}
               className="w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-center gap-2 text-slate-200 hover:bg-blue-600 hover:text-white transition-colors"
             >
-              <Download className="w-4 h-4 text-blue-400 group-hover:text-white shrink-0" />
+              {isGeneratingPdf ? (
+                <Loader2 className="w-4 h-4 text-blue-400 animate-spin shrink-0" />
+              ) : (
+                <Download className="w-4 h-4 text-blue-400 group-hover:text-white shrink-0" />
+              )}
               <div>
                 <div className="font-bold text-white">Direct Download PDF (.pdf)</div>
                 <div className="text-[10px] opacity-75">Saves PDF file directly to your computer</div>

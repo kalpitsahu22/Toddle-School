@@ -14,7 +14,8 @@ import {
   FileText,
   Download,
   Copy,
-  Check
+  Check,
+  Loader2
 } from 'lucide-react';
 import { useWorkflowStore } from '../../store/workflowStore';
 import {
@@ -29,6 +30,7 @@ export const ArchitectureModal: React.FC = () => {
   const { isArchitectureModalOpen, setIsArchitectureModalOpen, workflows, activeWorkflowId } = useWorkflowStore();
   const [activeTab, setActiveTab] = useState<'sdd' | 'overview' | 'earlyaction' | 'graph' | 'lifecycle' | 'goals' | 'production'>('sdd');
   const [copied, setCopied] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const activeWorkflow = workflows.find((w) => w.id === activeWorkflowId) || workflows[0];
 
@@ -40,6 +42,16 @@ export const ArchitectureModal: React.FC = () => {
     navigator.clipboard.writeText(md);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownloadPdf = async () => {
+    if (isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+    try {
+      await downloadWorkflowSddPdf(activeWorkflow);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   return (
@@ -67,12 +79,17 @@ export const ArchitectureModal: React.FC = () => {
           {/* Header Action Buttons */}
           <div className="flex items-center gap-2">
             <button
-              onClick={() => downloadWorkflowSddPdf(activeWorkflow)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all"
+              onClick={handleDownloadPdf}
+              disabled={isGeneratingPdf}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all disabled:opacity-75"
               title="Download active workflow SDD directly as PDF"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download PDF</span>
+              {isGeneratingPdf ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              <span>{isGeneratingPdf ? 'Generating...' : 'Download PDF'}</span>
             </button>
 
             <button
@@ -155,11 +172,16 @@ export const ArchitectureModal: React.FC = () => {
                     <span>{copied ? 'Copied MD!' : 'Copy Markdown'}</span>
                   </button>
                   <button
-                    onClick={() => downloadWorkflowSddPdf(activeWorkflow)}
-                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all"
+                    onClick={handleDownloadPdf}
+                    disabled={isGeneratingPdf}
+                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-md shadow-blue-500/25 transition-all disabled:opacity-75"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Download PDF Document</span>
+                    {isGeneratingPdf ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isGeneratingPdf ? 'Generating...' : 'Download PDF Document'}</span>
                   </button>
                 </div>
               </div>
