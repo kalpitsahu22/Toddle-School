@@ -189,42 +189,143 @@ export const ArchitectureModal: React.FC = () => {
               {/* Node by Node Specification List */}
               <div className="space-y-4">
                 <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                  <span>Step-by-Step Node Handlers & Execution Contracts</span>
+                  <span>Step-by-Step Functional Specifications & Execution Rules</span>
                   <span className="font-mono text-[10px] text-slate-500">{activeWorkflow.nodes.length} Steps</span>
                 </h4>
 
-                <div className="space-y-3">
+                <div className="space-y-3.5">
                   {activeWorkflow.nodes.map((node, index) => {
-                    const code = generateNodeCodeSnippet(node.type, node.data);
+                    const data = node.data || {};
+                    const type = node.type || 'action';
+
                     return (
                       <div
                         key={node.id}
-                        className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2.5"
+                        className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 hover:border-slate-700 transition-all"
                       >
-                        <div className="flex items-center justify-between">
+                        {/* Header */}
+                        <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
                           <div className="flex items-center gap-2">
                             <span className="w-5 h-5 rounded-full bg-blue-600/20 border border-blue-500/40 text-blue-300 flex items-center justify-center font-mono text-[10px] font-bold">
                               {index + 1}
                             </span>
                             <span className="font-bold text-white text-xs">
-                              {node.data.label || 'Step'}
+                              {data.label || 'Step'}
                             </span>
-                            <span className="px-1.5 py-0.5 rounded bg-slate-800 text-[9px] font-mono text-slate-400 uppercase">
-                              {node.type}
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-mono uppercase font-extrabold ${
+                              type === 'trigger' ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' :
+                              type === 'action' ? 'bg-blue-950 text-blue-300 border border-blue-500/30' :
+                              type === 'condition' ? 'bg-amber-950 text-amber-300 border border-amber-500/30' :
+                              type === 'delay' ? 'bg-purple-950 text-purple-300 border border-purple-500/30' :
+                              type === 'human' ? 'bg-rose-950 text-rose-300 border border-rose-500/30' :
+                              type === 'goal' ? 'bg-orange-950 text-orange-300 border border-orange-500/30' :
+                              'bg-teal-950 text-teal-300 border border-teal-500/30'
+                            }`}>
+                              {type}
                             </span>
                           </div>
                           <span className="font-mono text-[10px] text-slate-500">{node.id}</span>
                         </div>
 
-                        <p className="text-slate-400 text-xs italic">
-                          {node.data.description || 'Process step.'}
-                        </p>
-
-                        {/* Technical Code Preview */}
-                        <div className="rounded-lg bg-slate-900 border border-slate-800 p-2.5 font-mono text-[11px] text-blue-300 overflow-x-auto">
-                          <div className="text-[9px] uppercase font-bold text-slate-500 mb-1">TypeScript Execution Handler</div>
-                          <pre className="text-[10px] leading-relaxed text-slate-300">{code}</pre>
+                        {/* Business Rationale */}
+                        <div className="space-y-1">
+                          <div className="text-[11px] font-bold text-blue-400">🎯 Business Purpose & Context:</div>
+                          <p className="text-slate-300 text-xs leading-relaxed">
+                            {data.description || 'Automated execution step within the admission pipeline.'}
+                          </p>
                         </div>
+
+                        {/* Parameters & Data Inputs */}
+                        <div className="space-y-1.5 p-3 rounded-lg bg-slate-900/80 border border-slate-800">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            📥 Configuration Parameters & Data Contracts:
+                          </div>
+                          <ul className="space-y-1 text-xs text-slate-300">
+                            {type === 'trigger' && (
+                              <>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Trigger Event:</strong> <code className="text-blue-300">{data.triggerEvent || 'Form Submitted'}</code></span>
+                                </li>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Intake Form:</strong> {data.formName || 'Standard Intake'}</span>
+                                </li>
+                              </>
+                            )}
+                            {type === 'action' && (
+                              <>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Service:</strong> <code className="text-blue-300">{data.actionService || 'email'}</code> | <strong className="text-slate-200">Recipient:</strong> <code className="text-blue-300">{data.recipient || '{{applicant.email}}'}</code></span>
+                                </li>
+                                {data.subject && (
+                                  <li className="flex items-center gap-1.5">
+                                    <span className="text-slate-500">•</span>
+                                    <span><strong className="text-slate-200">Subject:</strong> {data.subject}</span>
+                                  </li>
+                                )}
+                              </>
+                            )}
+                            {type === 'condition' && (
+                              <>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Rule:</strong> <code className="text-amber-300">{data.conditionRules?.[0]?.field || 'applicant.gradeCategory'} {data.conditionRules?.[0]?.operator || 'equals'} {JSON.stringify(data.conditionRules?.[0]?.value ?? true)}</code></span>
+                                </li>
+                                {data.branches && (
+                                  <li className="flex items-center gap-1.5">
+                                    <span className="text-slate-500">•</span>
+                                    <span><strong className="text-slate-200">Branches:</strong> {data.branches.map((b: any) => `${b.label}`).join(' | ')}</span>
+                                  </li>
+                                )}
+                              </>
+                            )}
+                            {type === 'delay' && (
+                              <>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Timer Duration:</strong> {data.delayDuration || 24} {data.delayUnit || 'hours'} ({data.delayType || 'fixed_duration'})</span>
+                                </li>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Early Action Bypass:</strong> {data.allowEarlyActionBypass ? '✅ Enabled (Cancels if parent acts early)' : '❌ Disabled'}</span>
+                                </li>
+                              </>
+                            )}
+                            {type === 'human' && (
+                              <>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Assigned Role:</strong> <code className="text-rose-300">{data.assignedRole || 'Admissions Committee'}</code></span>
+                                </li>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">SLA Decision Timeout:</strong> {data.timeoutHours || 72} hours</span>
+                                </li>
+                              </>
+                            )}
+                            {type === 'goal' && (
+                              <>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Target Metric:</strong> <code className="text-orange-300">{data.goalTargetMetric || 'fee_paid'}</code></span>
+                                </li>
+                                <li className="flex items-center gap-1.5">
+                                  <span className="text-slate-500">•</span>
+                                  <span><strong className="text-slate-200">Polling:</strong> Check every {data.goalCheckIntervalHours || 24}h (Max {data.goalMaxAttempts || 7} attempts)</span>
+                                </li>
+                              </>
+                            )}
+                          </ul>
+                        </div>
+
+                        {/* Resilience & Retry Strategy */}
+                        {data.retryPolicy?.enabled && (
+                          <div className="p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-300">
+                            🛡️ <strong>Resilience Policy:</strong> {data.retryPolicy.maxRetries} Retries with {data.retryPolicy.backoff} backoff ({data.retryPolicy.retryDelaySeconds}s delay).
+                          </div>
+                        )}
                       </div>
                     );
                   })}
